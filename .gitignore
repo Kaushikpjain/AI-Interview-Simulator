@@ -1,0 +1,10 @@
+# Ignore local environment keys
+.env
+
+# Ignore dependency environments
+venv/
+
+# Ignore system cache layers
+__pycache__/
+*.pyc
+.DS_Store

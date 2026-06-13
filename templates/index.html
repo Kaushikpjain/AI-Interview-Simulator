@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Simulator</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="screen-setup" class="card active">
+            <h1>AI Interview Simulator</h1>
+            <p class="subtitle">Test your skills with our generative AI mock interviewer</p>
+            
+            <div class="form-group">
+                <label for="role-select">Select Target Job Role:</label>
+                <select id="role-select">
+                    <option value="" disabled selected>-- Choose a role --</option>
+                    <option value="Software Engineer">Software Engineer</option>
+                    <option value="Frontend Developer">Frontend Developer</option>
+                    <option value="Backend Developer">Backend Developer</option>
+                    <option value="Full Stack Developer">Full Stack Developer</option>
+                    <option value="Data Scientist">Data Scientist</option>
+                    <option value="AI/ML Engineer">AI/ML Engineer</option>
+                </select>
+            </div>
+            
+            <button id="btn-start" class="btn">Start Interview</button>
+            <div id="setup-error" class="error-msg hidden"></div>
+        </div>
+
+        <div id="screen-interview" class="card hidden">
+            <div class="interview-header">
+                <span id="question-number" class="badge">Question 1 of 5</span>
+                <span id="display-role" class="role-badge">Role</span>
+            </div>
+            
+            <h2 id="question-text" class="question-text">Loading question...</h2>
+            
+            <div class="form-group">
+                <label for="answer-input">Your Answer:</label>
+                <textarea id="answer-input" placeholder="Type your structured technical answer here..." rows="6"></textarea>
+                <div id="interview-error" class="error-msg hidden"></div>
+            </div>
+
+            <button id="btn-submit-answer" class="btn">Submit Answer</button>
+
+            <div id="feedback-section" class="feedback-container hidden">
+                <h3>AI Assessment</h3>
+                <div class="score-display">Score: <span id="feedback-score">0</span>/10</div>
+                
+                <div class="feedback-block">
+                    <strong>💪 Strengths:</strong>
+                    <p id="feedback-strengths"></p>
+                </div>
+                <div class="feedback-block">
+                    <strong>⚠️ Weaknesses:</strong>
+                    <p id="feedback-weaknesses"></p>
+                </div>
+                <div class="feedback-block">
+                    <strong>🚀 Improvement Suggestions:</strong>
+                    <p id="feedback-suggestions"></p>
+                </div>
+                
+                <button id="btn-next" class="btn btn-secondary">Next Question</button>
+            </div>
+        </div>
+
+        <div id="screen-report" class="card hidden">
+            <h1>Interview Completed!</h1>
+            <p class="subtitle">Here is your performance breakdown</p>
+            
+            <div class="final-score-container">
+                <div class="circle-score">
+                    <span id="average-score">0.0</span>
+                    <small>Avg Score</small>
+                </div>
+            </div>
+
+            <h3>Question Breakdown</h3>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Question</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody id="report-table-body">
+                    </tbody>
+            </table>
+
+            <div class="summary-box">
+                <h3>Overall Performance Summary</h3>
+                <p id="performance-summary">Generating performance insights...</p>
+            </div>
+
+            <button id="btn-restart" class="btn">Start New Interview</button>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="overlay hidden">
+        <div class="spinner"></div>
+        <p id="loading-text">Processing with Gemini AI...</p>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
