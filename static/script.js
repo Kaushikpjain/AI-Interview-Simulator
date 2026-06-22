@@ -1,13 +1,13 @@
-// Application State Management
+// Application Runtime State Machine Management Context
 let state = {
+    interview_id: null,
     role: "",
     questions: [],
     currentQuestionIndex: 0,
-    scores: [],
-    feedback: []
+    scores: []
 };
 
-// DOM Element Registry
+// DOM Element Registration Maps
 const screenSetup = document.getElementById('screen-setup');
 const screenInterview = document.getElementById('screen-interview');
 const screenReport = document.getElementById('screen-report');
@@ -15,6 +15,7 @@ const screenReport = document.getElementById('screen-report');
 const roleSelect = document.getElementById('role-select');
 const btnStart = document.getElementById('btn-start');
 const setupError = document.getElementById('setup-error');
+const historyTableBody = document.getElementById('history-table-body');
 
 const questionNumber = document.getElementById('question-number');
 const displayRole = document.getElementById('display-role');
@@ -38,7 +39,9 @@ const btnRestart = document.getElementById('btn-restart');
 const loadingOverlay = document.getElementById('loading-overlay');
 const loadingText = document.getElementById('loading-text');
 
-// Helper Functions
+// Initialize Lifecycle Logic Hook
+document.addEventListener('DOMContentLoaded', loadHistoryDashboard);
+
 function showLoading(text) {
     loadingText.textContent = text;
     loadingOverlay.classList.remove('hidden');
@@ -53,24 +56,39 @@ function showScreen(screen) {
     screen.classList.remove('hidden');
 }
 
-function formatFeedbackList(data) {
-    if (Array.isArray(data)) {
-        return data.length > 0 ? data.join(' ') : "None noted.";
+async function loadHistoryDashboard() {
+    try {
+        const response = await fetch('/get-history');
+        const data = await response.json();
+        
+        historyTableBody.innerHTML = "";
+        if (response.ok && data.history && data.history.length > 0) {
+            data.history.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.date_timestamp}</td>
+                    <td><strong>${item.role}</strong></td>
+                    <td><span class="badge-history">${item.average_score.toFixed(1)}/10</span></td>
+                `;
+                historyTableBody.appendChild(row);
+            });
+        } else {
+            historyTableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8;">No historical mock data records found.</td></tr>`;
+        }
+    } catch (err) {
+        console.error("Failed fetching context database rows mapping traces:", err);
     }
-    return data || "None noted.";
 }
 
-// Action Listeners
 btnStart.addEventListener('click', async () => {
     const selectedRole = roleSelect.value;
     if (!selectedRole) {
-        setupError.textContent = "Please select a job role to proceed.";
+        setupError.textContent = "Please pick a designated job track to unlock execution.";
         setupError.classList.remove('hidden');
         return;
     }
     setupError.classList.add('hidden');
-    
-    showLoading(`Generating custom questions for ${selectedRole}...`);
+    showLoading(`Structuring custom assessment questions for ${selectedRole}...`);
     
     try {
         const response = await fetch('/generate-questions', {
@@ -78,24 +96,23 @@ btnStart.addEventListener('click', async () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ role: selectedRole })
         });
-        
         const data = await response.json();
         
-        if (response.ok && data.questions && data.questions.length > 0) {
+        if (response.ok && data.questions) {
+            state.interview_id = data.interview_id;
             state.role = selectedRole;
             state.questions = data.questions;
             state.currentQuestionIndex = 0;
             state.scores = [];
-            state.feedback = [];
             
             displayRole.textContent = state.role;
             loadQuestion();
             showScreen(screenInterview);
         } else {
-            throw new Error(data.error || "Failed to receive valid interview content.");
+            throw new Error(data.error || "Failed loading inference questions payload frames.");
         }
     } catch (err) {
-        setupError.textContent = `Error: ${err.message}. Please check your .env API Key layout configuration and try again.`;
+        setupError.textContent = `Exception Failure: ${err.message}`;
         setupError.classList.remove('hidden');
     } finally {
         hideLoading();
@@ -116,40 +133,38 @@ function loadQuestion() {
 btnSubmitAnswer.addEventListener('click', async () => {
     const answer = answerInput.value.trim();
     if (!answer) {
-        interviewError.textContent = "Your response cannot be blank.";
+        interviewError.textContent = "Your response workspace parameters cannot be blank.";
         interviewError.classList.remove('hidden');
         return;
     }
     interviewError.classList.add('hidden');
-    
-    showLoading("Evaluating response analytics with Gemini...");
+    showLoading("Evaluating engineering solution response with Gemini API...");
     
     try {
         const response = await fetch('/evaluate-answer', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                interview_id: state.interview_id,
                 question: state.questions[state.currentQuestionIndex],
                 answer: answer
             })
         });
-        
         const evaluation = await response.json();
         
         if (response.ok) {
             state.scores.push(Number(evaluation.score) || 0);
-            state.feedback.push(evaluation);
             
             feedbackScore.textContent = evaluation.score;
-            feedbackStrengths.textContent = formatFeedbackList(evaluation.strengths);
-            feedbackWeaknesses.textContent = formatFeedbackList(evaluation.weaknesses);
-            feedbackSuggestions.textContent = formatFeedbackList(evaluation.suggestions);
+            feedbackStrengths.textContent = evaluation.strengths;
+            feedbackWeaknesses.textContent = evaluation.weaknesses;
+            feedbackSuggestions.textContent = evaluation.suggestions;
             
             answerInput.disabled = true;
             btnSubmitAnswer.classList.add('hidden');
             feedbackSection.classList.remove('hidden');
         } else {
-            throw new Error(evaluation.error || "Failed inspecting response metrics.");
+            throw new Error(evaluation.error || "Failed running evaluation engine routines.");
         }
     } catch (err) {
         interviewError.textContent = `Evaluation Failure: ${err.message}`;
@@ -164,40 +179,63 @@ btnNext.addEventListener('click', () => {
     if (state.currentQuestionIndex < state.questions.length) {
         loadQuestion();
     } else {
-        renderFinalReport();
+        processFinalReportCalculations();
     }
 });
 
-function renderFinalReport() {
-    const total = state.scores.reduce((sum, val) => sum + val, 0);
-    const avg = (total / state.scores.length).toFixed(1);
-    averageScoreEl.textContent = avg;
-    
+async function processFinalReportCalculations() {
+    showLoading("Finalizing metrics summary and recording analytics matrices...");
+    try {
+        const response = await fetch('/finalize-interview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interview_id: state.interview_id })
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+            renderFinalReportView(data.average_score);
+        } else {
+            throw new Error(data.error || "Final calculation metrics synchronization failure.");
+        }
+    } catch (err) {
+        console.error(err);
+        // Fallback mathematical generation if endpoint execution encounters friction
+        const localAvg = (state.scores.reduce((a, b) => a + b, 0) / state.scores.length).toFixed(1);
+        renderFinalReportView(localAvg);
+    } finally {
+        hideLoading();
+    }
+}
+
+function renderFinalReportView(finalAvgScore) {
+    averageScoreEl.textContent = finalAvgScore;
     reportTableBody.innerHTML = "";
+    
     state.questions.forEach((q, idx) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${idx + 1}</td>
             <td><strong>${q}</strong></td>
-            <td><span class="badge">${state.scores[idx]}/10</span></td>
+            <td><span class="badge-history">${state.scores[idx]}/10</span></td>
         `;
         reportTableBody.appendChild(row);
     });
     
-    let finalMetricNarrative = "";
-    if (avg >= 8.0) {
-        finalMetricNarrative = `Outstanding job! You show a great technical grasp of ${state.role} parameters. Your solutions match clean design practices and robust domain-driven production architectures.`;
-    } else if (avg >= 5.0) {
-        finalMetricNarrative = `Solid foundation! You possess the essential skills required for a ${state.role}. Reviewing your specific weak points and refining edge cases will help push you to the next level.`;
+    let narrative = "";
+    if (finalAvgScore >= 8.0) {
+        narrative = `Outstanding job! You show a great technical grasp of ${state.role} parameters. Your solutions match clean design practices and robust domain-driven production architectures.`;
+    } else if (finalAvgScore >= 5.0) {
+        narrative = `Solid foundation! You possess the essential skills required for a ${state.role}. Reviewing your specific weak points and refining edge cases will help push you to the next level.`;
     } else {
-        finalMetricNarrative = `Keep practicing! Review fundamental patterns and architectural concepts for ${state.role}. Retaking the interview after focusing on our suggestions will yield noticeable growth.`;
+        narrative = `Keep practicing! Review fundamental patterns and architectural concepts for ${state.role}. Retaking the interview after focusing on our suggestions will yield noticeable growth.`;
     }
-    performanceSummary.textContent = finalMetricNarrative;
-    
+    performanceSummary.textContent = narrative;
     showScreen(screenReport);
 }
 
 btnRestart.addEventListener('click', () => {
     roleSelect.value = "";
+    loadHistoryDashboard(); // Refresh history metrics view upon complete run wrap
     showScreen(screenSetup);
 });

@@ -8,3 +8,7 @@ venv/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Ignore localized SQLite binary databases
+*.db
+interviews.db

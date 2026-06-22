@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Interview Simulator</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+
     <div class="container">
-        <div id="screen-setup" class="card active">
+        <div id="screen-setup" class="card">
             <h1>AI Interview Simulator</h1>
-            <p class="subtitle">Test your skills with our generative AI mock interviewer</p>
+            <p class="subtitle">Select your focus discipline pathway to initialize a customized engineering review loop.</p>
             
             <div class="form-group">
-                <label for="role-select">Select Target Job Role:</label>
+                <label for="role-select">Target Engineering Role Profile:</label>
                 <select id="role-select">
-                    <option value="" disabled selected>-- Choose a role --</option>
+                    <option value="" disabled selected>-- Select an Engineering Option --</option>
                     <option value="Software Engineer">Software Engineer</option>
                     <option value="Frontend Developer">Frontend Developer</option>
                     <option value="Backend Developer">Backend Developer</option>
@@ -26,73 +27,84 @@
             </div>
             
             <button id="btn-start" class="btn">Start Interview</button>
-            <div id="setup-error" class="error-msg hidden"></div>
+            <p id="setup-error" class="error-msg hidden"></p>
+
+            <hr class="section-divider">
+            <div class="history-section">
+                <h3>Historical Performance Dashboard</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Session Date</th>
+                                <th>Target Career Track</th>
+                                <th>Report Metrics</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <div id="screen-interview" class="card hidden">
             <div class="interview-header">
-                <span id="question-number" class="badge">Question 1 of 5</span>
-                <span id="display-role" class="role-badge">Role</span>
+                <span id="question-number" class="badge-count">Question 1 of 5</span>
+                <span id="display-role" class="badge-role">Target Role</span>
             </div>
             
-            <h2 id="question-text" class="question-text">Loading question...</h2>
+            <h2 id="question-text">Loading question text parameters cleanly...</h2>
             
             <div class="form-group">
-                <label for="answer-input">Your Answer:</label>
-                <textarea id="answer-input" placeholder="Type your structured technical answer here..." rows="6"></textarea>
-                <div id="interview-error" class="error-msg hidden"></div>
+                <label for="answer-input">Your Response Matrix Workspace:</label>
+                <textarea id="answer-input" placeholder="Explain your design metrics, code statements, or algorithmic concepts deeply..." rows="6"></textarea>
             </div>
-
+            
             <button id="btn-submit-answer" class="btn">Submit Answer</button>
+            <p id="interview-error" class="error-msg hidden"></p>
 
-            <div id="feedback-section" class="feedback-container hidden">
-                <h3>AI Assessment</h3>
-                <div class="score-display">Score: <span id="feedback-score">0</span>/10</div>
-                
-                <div class="feedback-block">
-                    <strong>💪 Strengths:</strong>
-                    <p id="feedback-strengths"></p>
+            <div id="feedback-section" class="feedback-box hidden">
+                <div class="score-header">
+                    <h3>Evaluation Metrics</h3>
+                    <div class="score-pill"><span id="feedback-score">0</span> / 10</div>
                 </div>
-                <div class="feedback-block">
-                    <strong>⚠️ Weaknesses:</strong>
-                    <p id="feedback-weaknesses"></p>
-                </div>
-                <div class="feedback-block">
-                    <strong>🚀 Improvement Suggestions:</strong>
-                    <p id="feedback-suggestions"></p>
-                </div>
-                
+                <p><strong>Strengths:</strong> <span id="feedback-strengths"></span></p>
+                <p><strong>Technical Gaps:</strong> <span id="feedback-weaknesses"></span></p>
+                <p><strong>Improvement Suggestions:</strong> <span id="feedback-suggestions"></span></p>
                 <button id="btn-next" class="btn btn-secondary">Next Question</button>
             </div>
         </div>
 
         <div id="screen-report" class="card hidden">
-            <h1>Interview Completed!</h1>
-            <p class="subtitle">Here is your performance breakdown</p>
+            <h1 class="success-title">Interview Session Complete</h1>
+            <p class="subtitle">Aggregate performance scoring results summary map.</p>
             
             <div class="final-score-container">
                 <div class="circle-score">
                     <span id="average-score">0.0</span>
-                    <small>Avg Score</small>
+                    <span class="label">AVG SCORE</span>
                 </div>
             </div>
 
-            <h3>Question Breakdown</h3>
-            <table class="report-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Question</th>
-                        <th>Score</th>
-                    </tr>
-                </thead>
-                <tbody id="report-table-body">
-                    </tbody>
-            </table>
+            <div class="report-breakdown">
+                <h3>Itemized Session Score Breakdown</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item No.</th>
+                            <th>Evaluated Core Question Strata</th>
+                            <th>Rating Assigned</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-table-body">
+                        </tbody>
+                </table>
+            </div>
 
-            <div class="summary-box">
-                <h3>Overall Performance Summary</h3>
-                <p id="performance-summary">Generating performance insights...</p>
+            <div class="narrative-box">
+                <h3>Engineering Trajectory Evaluation</h3>
+                <p id="performance-summary"></p>
             </div>
 
             <button id="btn-restart" class="btn">Start New Interview</button>
@@ -100,10 +112,12 @@
     </div>
 
     <div id="loading-overlay" class="overlay hidden">
-        <div class="spinner"></div>
-        <p id="loading-text">Processing with Gemini AI...</p>
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <p id="loading-text">Communicating with AI backend layers context nodes...</p>
+        </div>
     </div>
 
-    <script src="/static/script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
